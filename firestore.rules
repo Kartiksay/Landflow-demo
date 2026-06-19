@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Entity Validations
+    function isValidAgency(data) {
+      return data.keys().hasAll(['userId', 'name', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() <= 100;
+    }
+
+    function isValidLead(data) {
+      return data.keys().hasAll(['userId', 'agencyId', 'name', 'company', 'status', 'createdAt', 'updatedAt']) &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() <= 100 &&
+             data.company is string && data.company.size() <= 100;
+    }
+
+    // Match Agencies
+    match /agencies/{agencyId} {
+      allow get: if isOwner(resource.data.userId);
+      allow list: if isOwner(resource.data.userId);
+      allow create: if isSignedIn() && isValidAgency(request.resource.data);
+      allow update: if isOwner(resource.data.userId) && isValidAgency(request.resource.data);
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // Match Leads
+    match /leads/{leadId} {
+      allow get: if isOwner(resource.data.userId);
+      allow list: if isOwner(resource.data.userId);
+      allow create: if isSignedIn() && isValidLead(request.resource.data);
+      allow update: if isOwner(resource.data.userId) && isValidLead(request.resource.data);
+      allow delete: if isOwner(resource.data.userId);
+      
+      // Match Sub-collections
+      match /messages/{messageId} {
+        allow read, write: if isOwner(get(/databases/$(database)/documents/leads/$(leadId)).data.userId);
+      }
+      match /followups/{followupId} {
+        allow read, write: if isOwner(get(/databases/$(database)/documents/leads/$(leadId)).data.userId);
+      }
+    }
+  }
+}

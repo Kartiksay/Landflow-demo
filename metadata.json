@@ -1,0 +1,6 @@
+{
+  "name": "LeadFlow AI",
+  "description": "AI-powered lead management and outreach platform for agencies. Features lead scoring, personalized pitch generation, and response intelligence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

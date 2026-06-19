@@ -1,0 +1,90 @@
+{
+  "entities": {
+    "Agency": {
+      "title": "Agency",
+      "description": "Configuration metadata for the agency.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "businessType": { "type": "string" },
+        "services": { "type": "string" },
+        "targetIndustry": { "type": "string" },
+        "idealCustomer": { "type": "string" },
+        "pricingRange": { "type": "string" },
+        "tone": { "type": "string" },
+        "faqs": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Information and AI-generated insights for a specific lead.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "agencyId": { "type": "string" },
+        "name": { "type": "string" },
+        "company": { "type": "string" },
+        "email": { "type": "string" },
+        "website": { "type": "string" },
+        "industry": { "type": "string" },
+        "status": { "type": "string", "enum": ["NEW", "QUALIFIED", "PITCHED", "REPLIED", "MEETING_NEEDED", "WON", "LOST"] },
+        "aiScore": { "type": "number" },
+        "aiCategory": { "type": "string" },
+        "aiReasoning": { "type": "string" },
+        "aiServiceAngle": { "type": "string" },
+        "aiPainPoints": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "agencyId", "name", "company", "status"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Outreach emails sent or drafted for a lead.",
+      "type": "object",
+      "properties": {
+        "leadId": { "type": "string" },
+        "agencyId": { "type": "string" },
+        "subject": { "type": "string" },
+        "content": { "type": "string" },
+        "status": { "type": "string", "enum": ["DRAFT", "SENT"] },
+        "sentAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["leadId", "agencyId", "subject", "content", "status"]
+    },
+    "FollowUp": {
+      "title": "FollowUp",
+      "description": "Scheduled follow-up messages.",
+      "type": "object",
+      "properties": {
+        "leadId": { "type": "string" },
+        "scheduledAt": { "type": "string", "format": "date-time" },
+        "content": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "SENT"] }
+      },
+      "required": ["leadId", "scheduledAt", "content", "status"]
+    }
+  },
+  "firestore": {
+    "/agencies/{agencyId}": {
+      "schema": "Agency",
+      "description": "Global agency configurations."
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Leads managed by agencies."
+    },
+    "/leads/{leadId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Outreach history for a lead."
+    },
+    "/leads/{leadId}/followups/{followupId}": {
+      "schema": "FollowUp",
+      "description": "Follow-up schedules for a lead."
+    }
+  }
+}
